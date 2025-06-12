@@ -1,0 +1,17 @@
+name: application
+
+services:
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: client
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: server
