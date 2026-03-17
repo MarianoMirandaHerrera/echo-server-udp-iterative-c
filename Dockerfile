@@ -1,18 +1,12 @@
-FROM gcc:13 AS base
-WORKDIR /usr/src/app
+ARG base_tag=bullseye
+ARG base_img=mcr.microsoft.com/vscode/devcontainers/base:dev-${base_tag}
 
-FROM base AS client-build
-COPY client/udp-echo-client.c .
-run gcc udp-echo-client.c -o client
+FROM --platform=linux/amd64 ${base_img} AS builder-install
 
-FROM base AS server-build
-COPY server/udp-echo-server.c .
-RUN gcc udp-echo-server.c -o server
-
-FROM debian:bookworm-slim AS client
-COPY --from=client-build /usr/src/app/client /usr/local/bin/client
-CMD [ "client" ]
-
-FROM debian:bookworm-slim AS server
-COPY --from=server-build /usr/src/app/server /usr/local/bin/server
-CMD [ "server" ]
+RUN apt-get update --fix-missing && apt-get -y upgrade
+RUN apt-get install -y --no-install-recommends \
+    apt-utils \
+    build-essential \
+    gcc \
+    make \
+    && rm -rf /var/lib/apt/lists/*
